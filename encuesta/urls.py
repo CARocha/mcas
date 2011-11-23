@@ -92,6 +92,9 @@ urlpatterns = patterns('mcas.encuesta.views',
      (r'^percepcion_estado.pdf/$', 'percepcion_estado_pdf'),
      (r'^percepcion_ong.pdf/$', 'percepcion_ong_pdf'),
      (r'^percepcion_empresa.pdf/$', 'percepcion_empresa_pdf'),
+     #spss
+     (r'^descargar/spss/$', 'spss_xls'),
+     (r'^descargar/ident/$', 'ident_xls'),
 )
 
 

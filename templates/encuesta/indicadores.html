@@ -7,6 +7,10 @@
 {% if request.session.centinel == 1 %}
 <div class="indicadores">
 <br>
+{% if user.is_authenticated %}
+<div class="botones-descarga"><a href="/descargar/ident"><img src="/files/img/identificadores.png"></a><a href="/descargar/spss"><img src="/files/img/xls.png"></a>
+</div>
+{% endif %}
             <div class="titulo" style="float:left;">Indicadores</div><br><br>
     <div id="dashboard">
 

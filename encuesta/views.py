@@ -98,7 +98,203 @@ def index(request):
 def indicadores(request):
     encuestas = _query_set_filtrado(request)
     return render_to_response('encuesta/indicadores.html', RequestContext(request, locals()))
+
+def __spss(request):
+    encuestas = _query_set_filtrado(request)
     
+    resultados = []
+    for encuesta in encuestas:
+        filas = []
+        filas.append(encuesta.user)
+        filas.append(encuesta.organizacion)
+        filas.append(encuesta.codigo)
+        filas.append(encuesta.fecha)
+        filas.append(encuesta.get_area_reside_display())
+        filas.append(encuesta.municipio)
+        filas.append(encuesta.comunidad)
+        filas.append(encuesta.get_sexo_display())
+        filas.append(encuesta.edad)
+        filas.append(encuesta.get_escolaridad_display())
+        filas.append(encuesta.get_estado_civil_display())
+        filas.append(encuesta.no_hijas)
+        filas.append(encuesta.no_hijos)
+        filas.append(encuesta.iglesia)
+        filas.append(encuesta.get_importancia_religion_display())
+        familias = encuesta.familia_set.all()
+        for familia in familias:
+            filas.append(familia.get_jefe_display())
+            filas.append(','.join(map(str, familia.vive_con.all().values_list('id',flat=True))))
+            filas.append(familia.adultos)
+            filas.append(familia.uno_siete)
+            filas.append(familia.ocho_diesciseis)
+        conocimientos = encuesta.conocimiento_set.all()
+        for conocimiento in conocimientos:
+            filas.append(', '.join(map(str, conocimiento.abuso.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, conocimiento.lugares.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, conocimiento.quien_abusa.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, conocimiento.que_hacer.all().values_list('id',flat=True))))
+            filas.append(conocimiento.conoce_ley)
+            filas.append(', '.join(map(str, conocimiento.nombre_ley.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, conocimiento.donde_aprendio.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, conocimiento.donde_informarse.all().values_list('id',flat=True))))
+        actitudes = encuesta.actitud_set.all()
+        for actitud in actitudes:
+            filas.append(', '.join(map(str, actitud.porque_abuso.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, actitud.que_piensa.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, actitud.que_piensa_victimas.all().values_list('id',flat=True))))
+            filas.append(actitud.get_familia_ensena_display())
+            filas.append(actitud.get_escuela_ensena_display())
+        practicas = encuesta.practica_set.all()
+        for practica in practicas:
+            filas.append(', '.join(map(str, practica.que_haria.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, practica.que_hago_prevenir.all().values_list('id',flat=True))))
+            filas.append(practica.get_participa_prevenir_display())
+            filas.append(', '.join(map(str, practica.como.all().values_list('id',flat=True))))  
+        estados = encuesta.estadoactual_set.all()
+        for estado in estados:
+            filas.append(estado.get_problema_comunidad_display())
+            filas.append(estado.get_problema_pais_display())
+            filas.append(estado.get_personas_atienden_display())
+            filas.append(', '.join(map(str, estado.lugares.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, estado.tipo_atencion.all().values_list('id',flat=True))))
+            filas.append(estado.get_donde_van_display())
+        percepciones = encuesta.percepcion_set.all()
+        for percepcion in percepciones:
+            filas.append(percepcion.get_conoce_abusados_display())
+            filas.append(', '.join(map(str, percepcion.que_familia.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, percepcion.quien_debe.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, percepcion.mensaje.all().values_list('id',flat=True))))
+            filas.append(percepcion.get_defender_display())
+            filas.append(', '.join(map(str, percepcion.rol_medios.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, percepcion.rol_iglesia.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, percepcion.rol_estado.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, percepcion.rol_ongs.all().values_list('id',flat=True))))
+            filas.append(', '.join(map(str, percepcion.rol_empresas.all().values_list('id',flat=True))))
+            
+        resultados.append(filas)
+    dict = {'resultados':resultados}
+
+    return dict
+    #return render_to_response('encuesta/spss.html', locals(),RequestContext(request))
+
+def spss_xls(request):
+    dict = __spss(request)
+    return write_xls('encuesta/spss.html', dict, 'spss.xls') 
+    
+def identificadores_xls(request):
+    
+    #familia
+    viven = []
+    for obj in ViveCon.objects.all():
+        viven.append([obj.id,obj])
+        
+    #conocimiento
+    abuso = []
+    for obj in Abuso.objects.all():
+        abuso.append([obj.id,obj])
+    
+    lugarabuso = []    
+    for obj in LugarAbuso.objects.all():
+        lugarabuso.append([obj.id,obj])
+        
+    quieabusa = []
+    for obj in Abusador.objects.all():
+        quieabusa.append([obj.id,obj])
+    
+    quehacer = []
+    for obj in QueHacer.objects.all():
+        quehacer.append([obj.id,obj])
+        
+    dondeaprendio = []
+    for obj in DondeAprendio.objects.all():
+        dondeaprendio.append([obj.id,obj])
+        
+    dondeinformar = []
+    for obj in DondeInformarse.objects.all():
+        dondeinformar.append([obj.id,obj])
+        
+    #Actitud
+    porqueabuso = []
+    for obj in PorqueAbuso.objects.all():
+        porqueabuso.append([obj.id,obj])
+        
+    quepiensa = []
+    for obj in QuePiensa.objects.all():
+        quepiensa.append([obj.id,obj])
+        
+    quepiensavictima = []
+    for obj in QuePiensaVictima.objects.all():
+        quepiensavictima.append([obj.id,obj])
+        
+    #Practica
+    queharia = []
+    for obj in QueHaria.objects.all():
+        queharia.append([obj.id,obj])
+        
+    hagoprevenir = []
+    for obj in QueHacePrevenir.objects.all():
+        hagoprevenir.append([obj.id,obj])
+        
+    como = []
+    for obj in ComoParticipo.objects.all():
+        como.append([obj.id,obj])
+        
+    #Estado Actual
+    lugares = []
+    for obj in LugarAtencion.objects.all():
+        lugares.append([obj.id,obj])
+        
+    tipoatencion = []
+    for obj in TipoAtencion.objects.all():
+        tipoatencion.append([obj.id,obj])
+        
+    #Percepción
+    quefamilia = []
+    for obj in QueFamilia.objects.all():
+        quefamilia.append([obj.id,obj])
+        
+    quiedebe = []
+    for obj in QuienDebe.objects.all():
+        quiedebe.append([obj.id,obj])
+        
+    mensaje = []
+    for obj in MensajeTransmiten.objects.all():
+        mensaje.append([obj.id,obj])
+        
+    medios = []
+    for obj in RolMedio.objects.all():
+        medios.append([obj.id,obj])
+        
+    iglesia = []
+    for obj in RolIglesia.objects.all():
+        iglesia.append([obj.id,obj])
+        
+    estado = []
+    for obj in RolEstado.objects.all():
+        estado.append([obj.id,obj])
+        
+    ong = []
+    for obj in RolOng.objects.all():
+        ong.append([obj.id,obj])
+        
+    empresa = []
+    for obj in RolEmpresa.objects.all():
+        empresa.append([obj.id,obj])
+                
+    dict = {'viven':viven,'abuso':abuso,'lugarabuso':lugarabuso,'quieabusa':quieabusa,
+            'quehacer':quehacer,'dondeaprendio':dondeaprendio,'dondeinformar':dondeinformar,
+            'porqueabuso':porqueabuso,'quepiensa':quepiensa,'quepiensavictima':quepiensavictima,
+            'queharia':queharia,'hagoprevenir':hagoprevenir,'como':como,'lugares':lugares,
+            'tipoatencion':tipoatencion,'quefamilia':quefamilia,'quiedebe':quiedebe,
+            'mensaje':mensaje,'medios':medios,'iglesia':iglesia,'estado':estado,'ong':ong,
+            'empresa':empresa}
+    
+    return dict
+
+def ident_xls(request):
+    dict = identificadores_xls(request)
+    return write_xls('encuesta/identificar.html', dict,'identificadores.xls')
+                                          
 
 def generales(request):
     encuestas = Encuesta.objects.all()
@@ -195,7 +391,6 @@ def __familia_jefe(request):
     
 def familia_jefe_xls(request):
     dict = __familia_jefe(request)
-    print dict
     return write_xls('encuesta/familia/jefe_xls.html', dict, 'jefe.doc')
     
 def familia_jefe_pdf(request):

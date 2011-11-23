@@ -85,15 +85,15 @@ class EncuestaAdmin(admin.ModelAdmin):
             return Encuesta.objects.all()
         return Encuesta.objects.filter(user=request.user)
 
-    def get_form(self, request, obj=None, ** kwargs):
-        grupos = request.user.groups.all()
-        monitoreo = Group.objects.get(name='Monitoreo')
-        if request.user.is_superuser or monitoreo in grupos: 
-            form = super(EncuestaAdmin, self).get_form(self, request, ** kwargs)
-        else:
-            form = super(EncuestaAdmin, self).get_form(self, request, ** kwargs)
-            form.base_fields['user'].queryset = User.objects.filter(pk=request.user.pk)
-        return form
+#    def get_form(self, request, obj=None, ** kwargs):
+#        grupos = request.user.groups.all()
+#        monitoreo = Group.objects.get(name='Monitoreo')
+#        if request.user.is_superuser or monitoreo in grupos: 
+#            form = super(EncuestaAdmin, self).get_form(self, request, ** kwargs)
+#        else:
+#            form = super(EncuestaAdmin, self).get_form(self, request, ** kwargs)
+#            form.base_fields['user'].queryset = User.objects.filter(pk=request.user.pk)
+#        return form
 
     class Media:
         css = {
